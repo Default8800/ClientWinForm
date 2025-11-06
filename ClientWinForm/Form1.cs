@@ -23,143 +23,7 @@ namespace ClientWinForm
             InitializeComponent();
             panel7.Paint += panel7_Paint;
         }
-        private void DrawDevicesOnPanel()
-        {
-            panel7.Invalidate(); // Вызывает событие Paint
-        }
-        
 
-        private void DrawDevice(Graphics g, Devices device)
-        {
-            if (!device.IsEnabled) return; // Не рисуем отключенные устройства
-
-            // Преобразуем цвет из HEX в Color
-            Color deviceColor = ColorTranslator.FromHtml(device.Color);
-
-            using (SolidBrush brush = new SolidBrush(deviceColor))
-            using (Pen pen = new Pen(Color.Black, 2))
-            {
-                switch (device.FigureType)
-                {
-                    case "Круг ●":
-                        // Рисуем круг
-                        g.FillEllipse(brush, device.PosX, device.PosY, device.Size, device.Size);
-                        g.DrawEllipse(pen, device.PosX, device.PosY, device.Size, device.Size);
-                        break;
-
-                    
-                    case "Квадрат ■":
-                        // Рисуем квадрат
-                        g.FillRectangle(brush, device.PosX, device.PosY, device.Size, device.Size);
-                        g.DrawRectangle(pen, device.PosX, device.PosY, device.Size, device.Size);
-                        break;
-
-                    case "Треугольник ▲":
-                        // Рисуем треугольник (равносторонний)
-                        Point[] trianglePoints = new Point[]
-                        {
-                    new Point(device.PosX + device.Size / 2, device.PosY), // Верхняя точка
-                    new Point(device.PosX, device.PosY + device.Size),     // Левая нижняя точка
-                    new Point(device.PosX + device.Size, device.PosY + device.Size) // Правая нижняя точка
-                        };
-                        g.FillPolygon(brush, trianglePoints);
-                        g.DrawPolygon(pen, trianglePoints);
-                        break;
-                }
-            }
-
-            // Добавляем текст с названием устройства
-            using (Font font = new Font("Arial", 8))
-            using (SolidBrush textBrush = new SolidBrush(Color.Black))
-            {
-                g.DrawString(device.Name, font, textBrush, device.PosX, device.PosY - 15);
-            }
-        }
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private async void button3_Click(object sender, EventArgs e) // кнопка обновить интерфйейс
-        {
-            using var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync("localhost", 8889);
-
-            Interfaces _interface = new Interfaces(_idInterfaces, textBox1.Text, textBox2.Text);
-            List<string> _interfaces = new List<string>();
-            _interfaces.Add(_idInterfaces.ToString());
-            _interfaces.Add(_interface.Name.ToString());
-            _interfaces.Add(_interface.Description.ToString());
-            _interfaces.Add(_interface.EditingDate.ToString());
-            RequestsClass request = new RequestsClass("UpdateData", "Interfaces", _interfaces);
-
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = false
-            };
-
-            // Сериализуем в JSON
-            string json = JsonSerializer.Serialize(request, options);
-            Console.WriteLine($"📤 Отправляемый JSON: {json}");
-
-            var stream = tcpClient.GetStream();
-            var data = Encoding.UTF8.GetBytes(json);
-            await stream.WriteAsync(data, 0, data.Length);
-
-            // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-            // УДАЛЯЕМ BOM СИМВОЛ (﻿)
-            response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
-
-            Console.WriteLine($" Полученный JSON: {response_string}");
-            Console.WriteLine($"Длина JSON: {response_string.Length}");
-
-            // Проверяем первые символы
-            if (response_string.Length > 0)
-            {
-                Console.WriteLine($"Первый символ: '{(int)response_string[0]:X}'");
-            }
-
-            // Десериализуем
-            try
-            {
-                var response = JsonSerializer.Deserialize<ResponseGetAllData>(response_string);
-
-                // Очищаем таблицу
-                dataGridView1.Rows.Clear();
-
-                // Добавляем строки через цикл
-                foreach (var interfaceObj in response.ObjectsListInterfaces)
-                {
-                    dataGridView1.Rows.Add(
-                        interfaceObj.Id,
-                        interfaceObj.Name,
-                        interfaceObj.Description,
-                        interfaceObj.EditingDate
-                    );
-                }
-                textBox1.Text = String.Empty;
-                textBox2.Text = String.Empty;
-
-            }
-            catch (JsonException ex)
-            {
-
-                // Дополнительная диагностика
-                foreach (char c in response_string)
-                {
-                    Console.WriteLine($"Символ: '{c}' Код: {(int)c:X}");
-                }
-            }
-        }
         private async void LoadAllData(string typeObject)
         {
             using var tcpClient = new TcpClient();
@@ -187,9 +51,9 @@ namespace ClientWinForm
             await stream.WriteAsync(data, 0, data.Length);
 
             // Читаем ответ
-            var buffer = new byte[8192];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
 
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
@@ -217,135 +81,157 @@ namespace ClientWinForm
                     Console.WriteLine($"Символ: '{c}' Код: {(int)c:X}");
                 }
             }
-        }
+        } //получение всех записей
         private async void Form1_Load(object sender, EventArgs e)//загрузка формы
         {
             LoadAllData("Interfaces");
         }
-
-        private async void button2_Click(object sender, EventArgs e)//копка удалить интерфейс
+        private void button11_Click(object sender, EventArgs e)
         {
-            using var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync("localhost", 8889);
-
-            Interfaces _interface = new Interfaces(_idInterfaces, textBox1.Text, textBox2.Text);
-            List<string> _interfaces = new List<string>();
-            _interfaces.Add(_interface.Id.ToString());
-            _interfaces.Add(_interface.Name.ToString());
-            _interfaces.Add(_interface.Description.ToString());
-            _interfaces.Add(_interface.EditingDate.ToString());
-            RequestsClass request = new RequestsClass("DeleteData", "Interfaces", _interfaces);
-
-            var option = new JsonSerializerOptions
+            if (_listRegisterValues.Count > 0)
             {
-                WriteIndented = false // без форматирования
-            };
+                DateTime startDate = dateTimePicker2.Value.Date; //от
+                DateTime endDate = dateTimePicker1.Value.Date.AddDays(1).AddSeconds(-1); ; //до
 
-            // Сериализуем в JSON
-            string json = JsonSerializer.Serialize(request, option);
-            Console.WriteLine($" Отправляемый JSON: {json}");
+                var filteredValues = new List<RegisterValues>();
 
-            var stream = tcpClient.GetStream();
-            var data = Encoding.UTF8.GetBytes(json);
-            await stream.WriteAsync(data, 0, data.Length);
+                foreach (var item in _listRegisterValues)
+                {
+                    if (item is JsonElement valueElement)
+                    {
+                        try
+                        {
+                            var registerValue = JsonSerializer.Deserialize<RegisterValues>(valueElement.GetRawText());
+
+                            // ТЕПЕРЬ можно обращаться к Timestamp
+                            if (registerValue.Timestamp >= startDate && registerValue.Timestamp <= endDate)
+                            {
+                                filteredValues.Add(registerValue);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Ошибка фильтрации: {ex.Message}");
+                        }
+                    }
+                }
+
+                // Сортируем и выводим
+                filteredValues = filteredValues.OrderBy(v => v.Timestamp).ToList();
+
+                richTextBox1.Clear();
+                string lastValue = "";
+                for (int i = 0; i < filteredValues.Count; i++)
+                {
+
+                    try
+                    {
 
 
+                        richTextBox1.AppendText($"({filteredValues[i].Timestamp:dd.MM.yyyy HH:mm:ss})  Значение: {filteredValues[i].Value}\n");
+                        lastValue = filteredValues[i].Value.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        richTextBox1.AppendText($"Ошибка чтения значения {i + 1}: {ex.Message}\n");
+                    }
 
+                }
 
-            // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-            // УДАЛЯЕМ BOM СИМВОЛ (﻿)
-            response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
-
-
-
-            // Проверяем первые символы
-            if (response_string.Length > 0)
-            {
-                Console.WriteLine($"Первый символ: '{(int)response_string[0]:X}'");
+                if (!filteredValues.Any())
+                {
+                    richTextBox1.AppendText("Нет данных за выбранный период\n");
+                }
             }
+        }  //выборка регистров по дате
 
-            //Десериализуем
-            try
-            {
-                await AddDataToDataGridView(response_string, "Interfaces");
-            }
-            catch (JsonException ex)
-            {
 
-            }
-            textBox1.Text = String.Empty;
-            textBox2.Text = String.Empty;
 
-        }
 
-        private async void button1_Click(object sender, EventArgs e) // кнопка добавить интерфейс
+
+
+        #region ОТРИСОВКА ДЕВАЙСОВ
+        private void DrawDevicesOnPanel()
         {
-            using var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync("localhost", 8889);
-
-            Interfaces _interface = new Interfaces(textBox1.Text, textBox2.Text);
-            List<string> _interfaces = new List<string>();
-            _interfaces.Add(_interface.Id.ToString());
-            _interfaces.Add(_interface.Name.ToString());
-            _interfaces.Add(_interface.Description.ToString());
-            _interfaces.Add(_interface.EditingDate.ToString());
-            RequestsClass request = new RequestsClass("AddData", "Interfaces", _interfaces);
-
-            var option = new JsonSerializerOptions
-            {
-                WriteIndented = false // без форматирования
-            };
-
-            // Сериализуем в JSON
-            string json = JsonSerializer.Serialize(request, option);
-            Console.WriteLine($" Отправляемый JSON: {json}");
-
-            var stream = tcpClient.GetStream();
-            var data = Encoding.UTF8.GetBytes(json);
-            await stream.WriteAsync(data, 0, data.Length);
-
-
-
-
-            // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-            // УДАЛЯЕМ BOM СИМВОЛ (﻿)
-            response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
-
-
-
-            // Проверяем первые символы
-            if (response_string.Length > 0)
-            {
-                Console.WriteLine($"Первый символ: '{(int)response_string[0]:X}'");
-            }
-
-            //Десериализуем
-            try
-            {
-                await AddDataToDataGridView(response_string, "Interfaces");
-            }
-            catch (JsonException ex)
-            {
-
-            }
-            textBox1.Text = String.Empty;
-            textBox2.Text = String.Empty;
+            panel7.Invalidate(); // Вызывает событие Paint
         }
+        private void DrawDevice(Graphics g, Devices device)
+        {
+            if (!device.IsEnabled) return; // Не рисуем отключенные устройства
 
-        #region Обработка нажатия на гриды
+            // Преобразуем цвет из HEX в Color
+            Color deviceColor = ColorTranslator.FromHtml(device.Color);
+
+            using (SolidBrush brush = new SolidBrush(deviceColor))
+            using (Pen pen = new Pen(Color.Black, 2))
+            {
+                switch (device.FigureType)
+                {
+                    case "Круг ●":
+                        // Рисуем круг
+                        g.FillEllipse(brush, device.PosX, device.PosY, device.Size, device.Size);
+                        g.DrawEllipse(pen, device.PosX, device.PosY, device.Size, device.Size);
+                        break;
+
+
+                    case "Квадрат ■":
+                        // Рисуем квадрат
+                        g.FillRectangle(brush, device.PosX, device.PosY, device.Size, device.Size);
+                        g.DrawRectangle(pen, device.PosX, device.PosY, device.Size, device.Size);
+                        break;
+
+                    case "Треугольник ▲":
+                        // Рисуем треугольник (равносторонний)
+                        Point[] trianglePoints = new Point[]
+                        {
+                    new Point(device.PosX + device.Size / 2, device.PosY), // Верхняя точка
+                    new Point(device.PosX, device.PosY + device.Size),     // Левая нижняя точка
+                    new Point(device.PosX + device.Size, device.PosY + device.Size) // Правая нижняя точка
+                        };
+                        g.FillPolygon(brush, trianglePoints);
+                        g.DrawPolygon(pen, trianglePoints);
+                        break;
+                }
+            }
+
+            // Добавляем текст с названием устройства
+            using (Font font = new Font("Arial", 8))
+            using (SolidBrush textBrush = new SolidBrush(Color.Black))
+            {
+                g.DrawString(device.Name, font, textBrush, device.PosX, device.PosY - 15);
+            }
+        }
+        private void panel7_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+            // Очищаем Panel
+            g.Clear(panel1.BackColor);
+
+            // Рисуем все устройства из списка
+            foreach (var device in _devicesList)
+            {
+                DrawDevice(g, device);
+            }
+        }
+        #endregion
+
+
+
+
+
+
+
+
+        #region ГРИДЫ
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e) //грид интерфейсов
         {
             DataGridViewRow selectedRow = dataGridView1.Rows[e.RowIndex];
             int i = (int)selectedRow.Cells[0].Value;
             _idInterfaces = i;
+            button3.Enabled = true;
+            button2.Enabled = true;
             GetOneData("Interfaces", i);
             //очистка параметров девайсов
             textBox3.Text = String.Empty;
@@ -378,12 +264,134 @@ namespace ClientWinForm
             button8.Enabled = false;
             label12.Text = "Таймер:";
         }
+        private void dataGridView2_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+            DataGridViewRow selectedRow = dataGridView2.Rows[e.RowIndex];
+            int i = (int)selectedRow.Cells[0].Value;
+            _idDevices = i;
+            GetOneData("Devices", i);
+
+
+        } //грид девайсов
+
+        private void dataGridView3_CellDoubleClick(object sender, DataGridViewCellEventArgs e)//грид регистров
+        {
+            DataGridViewRow selectedRow = dataGridView3.Rows[e.RowIndex];
+            int i = (int)selectedRow.Cells[0].Value;
+            _idRegisters = i;
+            GetOneData("Registers", i);
+
+        }
+
+        private async Task AddDataToDataGridView(string responseFromData, string typeObject) //метод добавления данных в гриды
+        {
+            var response = JsonSerializer.Deserialize<ResponseGetAllData>(responseFromData);
+
+
+
+            switch (typeObject)
+            {
+                case "Interfaces":
+                    dataGridView1.Rows.Clear();
+
+                    foreach (var interfaceObj in response.Interfaces)
+                    {
+
+                        dataGridView1.Rows.Add(
+                            interfaceObj.Id,
+                            interfaceObj.Name,
+                            interfaceObj.Description,
+                            interfaceObj.EditingDate
+                        );
+                    }
+                    break;
+                case "Devices":
+
+
+                    dataGridView2.Rows.Clear();
+                    _devicesList.Clear(); // Очищаем список устройств для отрисовки
+
+                    foreach (var devicesObj in response.Devices)
+                    {
+                        if (devicesObj.InterfaceId == _idInterfaces)
+                        {
+                            dataGridView2.Rows.Add(
+                            devicesObj.Id,
+                            devicesObj.InterfaceId,
+                            devicesObj.Name,
+                            devicesObj.Description,
+                            devicesObj.IsEnabled,
+                            devicesObj.EditingDate,
+                            devicesObj.FigureType,
+                            devicesObj.Size,
+                            devicesObj.PosX,
+                            devicesObj.PosY,
+                            devicesObj.Color
+                            );
+
+                            // Добавляем устройство в список для отрисовки
+                            _devicesList.Add(devicesObj);
+                        }
+                    }
+
+                    // Отрисовываем устройства на Panel
+                    DrawDevicesOnPanel();
+
+                    break;
+                case "Registers":
+
+                    dataGridView3.Rows.Clear();
+
+
+                    foreach (var registersObj in response.Registers)
+                    {
+                        _backListRegisters.Add(registersObj);
+                        if (registersObj.DeviceId == _idDevices)
+                        {
+                            dataGridView3.Rows.Add(
+                            registersObj.Id,
+                            registersObj.DeviceId,
+                            registersObj.Name,
+                            registersObj.Description,
+                            registersObj.EditingDate
+                            );
+                        }
+                        button7.Enabled = true;
+                        button8.Enabled = false;
+
+
+                    }
+
+
+                    break;
+                case "Logs":
+                    FormLogs form = new FormLogs();
+                    form.Show();
+                    form.richTextBox1.Clear();
+                    foreach (var registersObj in response.Logs)
+                    {
+
+                        form.richTextBox1.AppendText($"{registersObj.Id.ToString()}/{registersObj.Timestamp.ToString()}/{registersObj.Message.ToString()}/{registersObj.Type.ToString()}\n");
+
+
+                    }
+                    break;
+            }
 
 
 
 
 
-        private async void GetOneData(string type, int id)
+
+
+
+
+
+
+
+        }
+        private async void GetOneData(string type, int id) //получение данных о записи с сервера + получение данных для некст дейсвий
         {
 
             using var tcpClient = new TcpClient();
@@ -427,9 +435,9 @@ namespace ClientWinForm
             await stream.WriteAsync(data, 0, data.Length);
 
             // Читаем ответ
-            var buffer = new byte[8000];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
 
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
@@ -575,12 +583,221 @@ namespace ClientWinForm
 
 
 
-        private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
+
+
+        #region ИНТЕРФЕЙСЫ
+
+        private async void button3_Click(object sender, EventArgs e) // кнопка обновить интерфйейс
         {
+
+            button3.Enabled = false;
+            button2.Enabled = false;
+            using var tcpClient = new TcpClient();
+            await tcpClient.ConnectAsync("localhost", 8889);
+
+            Interfaces _interface = new Interfaces(_idInterfaces, textBox1.Text, textBox2.Text);
+            List<string> _interfaces = new List<string>();
+            _interfaces.Add(_idInterfaces.ToString());
+            _interfaces.Add(_interface.Name.ToString());
+            _interfaces.Add(_interface.Description.ToString());
+            _interfaces.Add(_interface.EditingDate.ToString());
+            RequestsClass request = new RequestsClass("UpdateData", "Interfaces", _interfaces);
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = false
+            };
+
+            // Сериализуем в JSON
+            string json = JsonSerializer.Serialize(request, options);
+            Console.WriteLine($"📤 Отправляемый JSON: {json}");
+
+            var stream = tcpClient.GetStream();
+            var data = Encoding.UTF8.GetBytes(json);
+            await stream.WriteAsync(data, 0, data.Length);
+
+            // Читаем ответ
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
+
+            // УДАЛЯЕМ BOM СИМВОЛ (﻿)
+            response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
+
+            Console.WriteLine($" Полученный JSON: {response_string}");
+            Console.WriteLine($"Длина JSON: {response_string.Length}");
+
+            // Проверяем первые символы
+            if (response_string.Length > 0)
+            {
+                Console.WriteLine($"Первый символ: '{(int)response_string[0]:X}'");
+            }
+
+            // Десериализуем
+            try
+            {
+                var response = JsonSerializer.Deserialize<ResponseGetAllData>(response_string);
+
+                // Очищаем таблицу
+                dataGridView1.Rows.Clear();
+
+                // Добавляем строки через цикл
+                foreach (var interfaceObj in response.Interfaces)
+                {
+                    dataGridView1.Rows.Add(
+                        interfaceObj.Id,
+                        interfaceObj.Name,
+                        interfaceObj.Description,
+                        interfaceObj.EditingDate
+                    );
+                }
+                textBox1.Text = String.Empty;
+                textBox2.Text = String.Empty;
+
+            }
+            catch (JsonException ex)
+            {
+
+                // Дополнительная диагностика
+                foreach (char c in response_string)
+                {
+                    Console.WriteLine($"Символ: '{c}' Код: {(int)c:X}");
+                }
+            }
+            _idInterfaces = -1;
+            button3.Enabled = false;
+            button2.Enabled = false;
+        }
+        private async void button2_Click(object sender, EventArgs e)//копка удалить интерфейс
+        {
+
+            button3.Enabled = false;
+            button2.Enabled = false;
+            using var tcpClient = new TcpClient();
+            await tcpClient.ConnectAsync("localhost", 8889);
+
+            Interfaces _interface = new Interfaces(_idInterfaces, textBox1.Text, textBox2.Text);
+            List<string> _interfaces = new List<string>();
+            _interfaces.Add(_interface.Id.ToString());
+            _interfaces.Add(_interface.Name.ToString());
+            _interfaces.Add(_interface.Description.ToString());
+            _interfaces.Add(_interface.EditingDate.ToString());
+            RequestsClass request = new RequestsClass("DeleteData", "Interfaces", _interfaces);
+
+            var option = new JsonSerializerOptions
+            {
+                WriteIndented = false // без форматирования
+            };
+
+            // Сериализуем в JSON
+            string json = JsonSerializer.Serialize(request, option);
+            Console.WriteLine($" Отправляемый JSON: {json}");
+
+            var stream = tcpClient.GetStream();
+            var data = Encoding.UTF8.GetBytes(json);
+            await stream.WriteAsync(data, 0, data.Length);
+
+
+
+
+            // Читаем ответ
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
+
+            // УДАЛЯЕМ BOM СИМВОЛ (﻿)
+            response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
+
+
+
+            // Проверяем первые символы
+            if (response_string.Length > 0)
+            {
+                Console.WriteLine($"Первый символ: '{(int)response_string[0]:X}'");
+            }
+
+            //Десериализуем
+            try
+            {
+                await AddDataToDataGridView(response_string, "Interfaces");
+            }
+            catch (JsonException ex)
+            {
+
+            }
+            textBox1.Text = String.Empty;
+            textBox2.Text = String.Empty;
+
 
         }
 
-        #region тут все что связано с девайсами
+        private async void button1_Click(object sender, EventArgs e) // кнопка добавить интерфейс
+        {
+
+            button3.Enabled = false;
+            button2.Enabled = false;
+            using var tcpClient = new TcpClient();
+            await tcpClient.ConnectAsync("localhost", 8889);
+
+            Interfaces _interface = new Interfaces(textBox1.Text, textBox2.Text);
+            List<string> _interfaces = new List<string>();
+            _interfaces.Add(_interface.Id.ToString());
+            _interfaces.Add(_interface.Name.ToString());
+            _interfaces.Add(_interface.Description.ToString());
+            _interfaces.Add(_interface.EditingDate.ToString());
+            RequestsClass request = new RequestsClass("AddData", "Interfaces", _interfaces);
+
+            var option = new JsonSerializerOptions
+            {
+                WriteIndented = false // без форматирования
+            };
+
+            // Сериализуем в JSON
+            string json = JsonSerializer.Serialize(request, option);
+            Console.WriteLine($" Отправляемый JSON: {json}");
+
+            var stream = tcpClient.GetStream();
+            var data = Encoding.UTF8.GetBytes(json);
+            await stream.WriteAsync(data, 0, data.Length);
+
+
+
+
+            // Читаем ответ
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
+
+            // УДАЛЯЕМ BOM СИМВОЛ (﻿)
+            response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
+
+
+
+            // Проверяем первые символы
+            if (response_string.Length > 0)
+            {
+                Console.WriteLine($"Первый символ: '{(int)response_string[0]:X}'");
+            }
+
+            //Десериализуем
+            try
+            {
+                await AddDataToDataGridView(response_string, "Interfaces");
+            }
+            catch (JsonException ex)
+            {
+
+            }
+            textBox1.Text = String.Empty;
+            textBox2.Text = String.Empty;
+            button3.Enabled = false;
+            button2.Enabled = false;
+
+        }
+        #endregion
+
+
+        #region ДЕВАЙСЫ
         private async void button4_Click(object sender, EventArgs e)//удалить
         {
             using var tcpClient = new TcpClient();
@@ -608,10 +825,9 @@ namespace ClientWinForm
 
 
             // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
 
@@ -706,9 +922,9 @@ namespace ClientWinForm
 
 
             // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
 
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
@@ -741,104 +957,7 @@ namespace ClientWinForm
             comboBox3.Text = "Выберите";
         }
 
-
-        private async Task AddDataToDataGridView(string responseFromData, string typeObject)
-        {
-            var response = JsonSerializer.Deserialize<ResponseGetAllData>(responseFromData);
-
-
-
-            switch (typeObject)
-            {
-                case "Interfaces":
-                    dataGridView1.Rows.Clear();
-
-                    foreach (var interfaceObj in response.ObjectsListInterfaces)
-                    {
-
-                        dataGridView1.Rows.Add(
-                            interfaceObj.Id,
-                            interfaceObj.Name,
-                            interfaceObj.Description,
-                            interfaceObj.EditingDate
-                        );
-                    }
-                    break;
-                case "Devices":
-
-
-                    dataGridView2.Rows.Clear();
-                    _devicesList.Clear(); // Очищаем список устройств для отрисовки
-
-                    foreach (var devicesObj in response.ObjectsListDevices)
-                    {
-                        if (devicesObj.InterfaceId == _idInterfaces)
-                        {
-                            dataGridView2.Rows.Add(
-                            devicesObj.Id,
-                            devicesObj.InterfaceId,
-                            devicesObj.Name,
-                            devicesObj.Description,
-                            devicesObj.IsEnabled,
-                            devicesObj.EditingDate,
-                            devicesObj.FigureType,
-                            devicesObj.Size,
-                            devicesObj.PosX,
-                            devicesObj.PosY,
-                            devicesObj.Color
-                            );
-
-                            // Добавляем устройство в список для отрисовки
-                            _devicesList.Add(devicesObj);
-                        }
-                    }
-
-                    // Отрисовываем устройства на Panel
-                    DrawDevicesOnPanel();
-
-                    break;
-                case "Registers":
-
-                    dataGridView3.Rows.Clear();
-
-
-                    foreach (var registersObj in response.ObjectsListRegisters)
-                    {
-                        _backListRegisters.Add(registersObj);
-                        if (registersObj.DeviceId == _idDevices)
-                        {
-                            dataGridView3.Rows.Add(
-                            registersObj.Id,
-                            registersObj.DeviceId,
-                            registersObj.Name,
-                            registersObj.Description,
-                            registersObj.EditingDate
-                            );
-                        }
-                        button7.Enabled = true;
-                        button8.Enabled = false;
-
-
-                    }
-
-
-                    break;
-            }
-
-
-
-
-
-
-
-
-
-
-
-
-        }
-
-        private async void button6_Click(object sender, EventArgs e)//изменить
+        private async void button6_Click(object sender, EventArgs e)//изменить 
         {
             using var tcpClient = new TcpClient();
             await tcpClient.ConnectAsync("localhost", 8889);
@@ -899,9 +1018,9 @@ namespace ClientWinForm
 
 
             // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
 
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
@@ -935,43 +1054,8 @@ namespace ClientWinForm
         }
         #endregion
 
-        private void dataGridView2_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
 
-            DataGridViewRow selectedRow = dataGridView2.Rows[e.RowIndex];
-            int i = (int)selectedRow.Cells[0].Value;
-            _idDevices = i;
-            GetOneData("Devices", i);
-
-
-        }
-
-        private void button7_Click(object sender, EventArgs e)
-        {
-            _numTick = 0;
-            timer1.Start();
-            timer1.Enabled = true;
-            timer2.Start();
-            button7.Enabled = false;
-            button8.Enabled = true;
-        }
-
-        private void button8_Click(object sender, EventArgs e)
-        {
-            _numTick = 0;
-            timer1.Enabled = false;
-            button7.Enabled = true;
-            button8.Enabled = false;
-        }
-
-        private void dataGridView3_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            DataGridViewRow selectedRow = dataGridView3.Rows[e.RowIndex];
-            int i = (int)selectedRow.Cells[0].Value;
-            _idRegisters = i;
-            GetOneData("Registers", i);
-
-        }
+        #region РЕГИСТРЫ
 
         private async void button9_Click(object sender, EventArgs e)//удаление регистра
         {
@@ -1000,9 +1084,9 @@ namespace ClientWinForm
 
 
             // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
 
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
@@ -1064,9 +1148,9 @@ namespace ClientWinForm
 
 
             // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
 
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
@@ -1124,9 +1208,9 @@ namespace ClientWinForm
 
 
             // Читаем ответ
-            var buffer = new byte[1024];
-            var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-            var response_string = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            var stream1 = tcpClient.GetStream();
+            using var reader = new StreamReader(stream1, Encoding.UTF8);
+            var response_string = await reader.ReadToEndAsync();
 
             // УДАЛЯЕМ BOM СИМВОЛ (﻿)
             response_string = response_string.Trim('\uFEFF', '\u200B', '\0', ' ', '\t', '\n', '\r');
@@ -1156,65 +1240,19 @@ namespace ClientWinForm
             dateTimePicker2.Enabled = false;
         }
 
-        private void button11_Click(object sender, EventArgs e)
-        {
-            if (_listRegisterValues.Count > 0)
-            {
-                DateTime startDate = dateTimePicker2.Value.Date; //от
-                DateTime endDate = dateTimePicker1.Value.Date.AddDays(1).AddSeconds(-1); ; //до
 
-                var filteredValues = new List<RegisterValues>();
-
-                foreach (var item in _listRegisterValues)
-                {
-                    if (item is JsonElement valueElement)
-                    {
-                        try
-                        {
-                            var registerValue = JsonSerializer.Deserialize<RegisterValues>(valueElement.GetRawText());
-
-                            // ТЕПЕРЬ можно обращаться к Timestamp
-                            if (registerValue.Timestamp >= startDate && registerValue.Timestamp <= endDate)
-                            {
-                                filteredValues.Add(registerValue);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Ошибка фильтрации: {ex.Message}");
-                        }
-                    }
-                }
-
-                // Сортируем и выводим
-                filteredValues = filteredValues.OrderBy(v => v.Timestamp).ToList();
-
-                richTextBox1.Clear();
-                string lastValue = "";
-                for (int i = 0; i < filteredValues.Count; i++)
-                {
-
-                    try
-                    {
+        #endregion
 
 
-                        richTextBox1.AppendText($"({filteredValues[i].Timestamp:dd.MM.yyyy HH:mm:ss})  Значение: {filteredValues[i].Value}\n");
-                        lastValue = filteredValues[i].Value.ToString();
-                    }
-                    catch (Exception ex)
-                    {
-                        richTextBox1.AppendText($"Ошибка чтения значения {i + 1}: {ex.Message}\n");
-                    }
 
-                }
 
-                if (!filteredValues.Any())
-                {
-                    richTextBox1.AppendText("Нет данных за выбранный период\n");
-                }
-            }
-        }
 
+
+
+
+
+
+        #region ТАЙМЕРЫ
         private async void timer1_Tick(object sender, EventArgs e)
         {
             if (_registerValuesList.Count >= 200)
@@ -1288,11 +1326,11 @@ namespace ClientWinForm
                 await stream.WriteAsync(data, 0, data.Length);
 
                 // Ждем ответ от сервера
-                var buffer = new byte[4096];
-                var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                var response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                var stream1 = tcpClient.GetStream();
+                using var reader = new StreamReader(stream1, Encoding.UTF8);
+                var response_string = await reader.ReadToEndAsync();
 
-                Console.WriteLine($"✅ Отправлена пачка из {batch.Count} значений. Ответ: {response}");
+                Console.WriteLine($"✅ Отправлена пачка из {batch.Count} значений. Ответ: {response_string}");
             }
             catch (Exception ex)
             {
@@ -1307,19 +1345,42 @@ namespace ClientWinForm
             label12.Text = $"Таймер: {_numTick}с.";
         }
 
-        private void panel7_Paint(object sender, PaintEventArgs e)
+
+        private void button7_Click(object sender, EventArgs e)
         {
-            Graphics g = e.Graphics;
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            _numTick = 0;
+            timer1.Start();
+            timer1.Enabled = true;
+            timer2.Start();
+            button7.Enabled = false;
+            button8.Enabled = true;
+        }
 
-            // Очищаем Panel
-            g.Clear(panel1.BackColor);
+        private void button8_Click(object sender, EventArgs e)
+        {
+            label12.Text = "Таймер:";
+            _numTick = 0;
+            timer1.Stop();
+            timer1.Enabled = true;
+            timer2.Stop();
+            timer2.Enabled = false;
+            button7.Enabled = true;
+            button8.Enabled = false;
+        }
+        #endregion
 
-            // Рисуем все устройства из списка
-            foreach (var device in _devicesList)
-            {
-                DrawDevice(g, device);
-            }
+
+
+
+
+
+
+
+
+
+        private   void button13_Click(object sender, EventArgs e)
+        {
+              LoadAllData("Logs");
         }
     }
 }

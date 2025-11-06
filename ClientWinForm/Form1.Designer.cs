@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             panel1 = new Panel();
             panel4 = new Panel();
             button3 = new Button();
@@ -105,6 +106,10 @@
             timer1 = new System.Windows.Forms.Timer(components);
             timer2 = new System.Windows.Forms.Timer(components);
             panel7 = new Panel();
+            label3 = new Label();
+            label17 = new Label();
+            label20 = new Label();
+            button13 = new Button();
             panel1.SuspendLayout();
             panel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
@@ -124,13 +129,14 @@
             panel1.BorderStyle = BorderStyle.Fixed3D;
             panel1.Controls.Add(panel4);
             panel1.Controls.Add(dataGridView1);
-            panel1.Location = new Point(0, 0);
+            panel1.Location = new Point(12, 37);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1054, 167);
+            panel1.Size = new Size(1075, 182);
             panel1.TabIndex = 0;
             // 
             // panel4
             // 
+            panel4.BackColor = SystemColors.ControlLightLight;
             panel4.Controls.Add(button3);
             panel4.Controls.Add(button2);
             panel4.Controls.Add(button1);
@@ -138,39 +144,44 @@
             panel4.Controls.Add(textBox1);
             panel4.Controls.Add(label2);
             panel4.Controls.Add(label1);
-            panel4.Location = new Point(681, 3);
+            panel4.Location = new Point(689, 8);
             panel4.Name = "panel4";
             panel4.Size = new Size(370, 161);
             panel4.TabIndex = 3;
             // 
             // button3
             // 
+            button3.BackColor = SystemColors.ControlLightLight;
+            button3.Enabled = false;
             button3.Location = new Point(261, 126);
             button3.Name = "button3";
             button3.Size = new Size(83, 23);
             button3.TabIndex = 6;
             button3.Text = "Сохранить";
-            button3.UseVisualStyleBackColor = true;
+            button3.UseVisualStyleBackColor = false;
             button3.Click += button3_Click;
             // 
             // button2
             // 
+            button2.BackColor = SystemColors.ControlLightLight;
+            button2.Enabled = false;
             button2.Location = new Point(37, 126);
             button2.Name = "button2";
             button2.Size = new Size(75, 23);
             button2.TabIndex = 5;
             button2.Text = "Удалить";
-            button2.UseVisualStyleBackColor = true;
+            button2.UseVisualStyleBackColor = false;
             button2.Click += button2_Click;
             // 
             // button1
             // 
+            button1.BackColor = SystemColors.ControlLightLight;
             button1.Location = new Point(149, 126);
             button1.Name = "button1";
             button1.Size = new Size(75, 23);
             button1.TabIndex = 4;
             button1.Text = "Добавить";
-            button1.UseVisualStyleBackColor = true;
+            button1.UseVisualStyleBackColor = false;
             button1.Click += button1_Click;
             // 
             // textBox2
@@ -204,20 +215,27 @@
             label1.Size = new Size(59, 15);
             label1.TabIndex = 0;
             label1.Text = "Название";
-            label1.Click += label1_Click;
             // 
             // dataGridView1
             // 
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.AllowUserToDeleteRows = false;
+            dataGridView1.BackgroundColor = SystemColors.ControlLightLight;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3, Column4 });
-            dataGridView1.Location = new Point(0, 0);
+            dataGridView1.Location = new Point(3, 3);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
             dataGridView1.Size = new Size(673, 166);
             dataGridView1.TabIndex = 0;
-            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             dataGridView1.CellDoubleClick += dataGridView1_CellDoubleClick;
             // 
             // Column1
@@ -257,14 +275,15 @@
             panel2.BorderStyle = BorderStyle.Fixed3D;
             panel2.Controls.Add(panel5);
             panel2.Controls.Add(dataGridView2);
-            panel2.Location = new Point(0, 173);
+            panel2.Location = new Point(12, 274);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1054, 167);
+            panel2.Size = new Size(1075, 182);
             panel2.TabIndex = 1;
             // 
             // panel5
             // 
             panel5.AutoScroll = true;
+            panel5.BackColor = SystemColors.ControlLightLight;
             panel5.Controls.Add(comboBox3);
             panel5.Controls.Add(label11);
             panel5.Controls.Add(label10);
@@ -284,7 +303,7 @@
             panel5.Controls.Add(button6);
             panel5.Controls.Add(button5);
             panel5.Controls.Add(button4);
-            panel5.Location = new Point(681, 3);
+            panel5.Location = new Point(689, 8);
             panel5.Name = "panel5";
             panel5.Size = new Size(370, 161);
             panel5.TabIndex = 1;
@@ -365,7 +384,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(18, 25);
+            label4.Location = new Point(18, 18);
             label4.Name = "label4";
             label4.Size = new Size(59, 15);
             label4.TabIndex = 13;
@@ -431,46 +450,49 @@
             // 
             // button6
             // 
+            button6.BackColor = SystemColors.ControlLightLight;
             button6.Location = new Point(263, 326);
             button6.Name = "button6";
             button6.Size = new Size(83, 23);
             button6.TabIndex = 2;
             button6.Text = "Сохранить";
-            button6.UseVisualStyleBackColor = true;
+            button6.UseVisualStyleBackColor = false;
             button6.Click += button6_Click;
             // 
             // button5
             // 
+            button5.BackColor = SystemColors.ControlLightLight;
             button5.Location = new Point(151, 326);
             button5.Name = "button5";
             button5.Size = new Size(75, 23);
             button5.TabIndex = 1;
             button5.Text = "Добавить";
-            button5.UseVisualStyleBackColor = true;
+            button5.UseVisualStyleBackColor = false;
             button5.Click += button5_Click;
             // 
             // button4
             // 
+            button4.BackColor = SystemColors.ControlLightLight;
             button4.Location = new Point(39, 326);
             button4.Name = "button4";
             button4.Size = new Size(75, 23);
             button4.TabIndex = 0;
             button4.Text = "Удалить";
-            button4.UseVisualStyleBackColor = true;
+            button4.UseVisualStyleBackColor = false;
             button4.Click += button4_Click;
             // 
             // dataGridView2
             // 
             dataGridView2.AllowUserToAddRows = false;
             dataGridView2.AllowUserToDeleteRows = false;
+            dataGridView2.BackgroundColor = SystemColors.ControlLightLight;
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView2.Columns.AddRange(new DataGridViewColumn[] { Column5, Column6, Column7, Column8, Column9, Column10, Column11, Column12, Column13, Column14, Column15 });
-            dataGridView2.Location = new Point(3, 1);
+            dataGridView2.Location = new Point(3, 3);
             dataGridView2.Name = "dataGridView2";
             dataGridView2.ReadOnly = true;
-            dataGridView2.Size = new Size(670, 166);
+            dataGridView2.Size = new Size(673, 166);
             dataGridView2.TabIndex = 0;
-            dataGridView2.CellContentClick += dataGridView2_CellContentClick;
             dataGridView2.CellDoubleClick += dataGridView2_CellDoubleClick;
             // 
             // Column5
@@ -551,14 +573,15 @@
             panel3.BorderStyle = BorderStyle.Fixed3D;
             panel3.Controls.Add(panel6);
             panel3.Controls.Add(dataGridView3);
-            panel3.Location = new Point(0, 346);
+            panel3.Location = new Point(12, 519);
             panel3.Name = "panel3";
-            panel3.Size = new Size(1054, 167);
+            panel3.Size = new Size(1075, 182);
             panel3.TabIndex = 2;
             // 
             // panel6
             // 
             panel6.AutoScroll = true;
+            panel6.BackColor = SystemColors.ControlLightLight;
             panel6.BorderStyle = BorderStyle.Fixed3D;
             panel6.Controls.Add(button12);
             panel6.Controls.Add(button10);
@@ -567,44 +590,47 @@
             panel6.Controls.Add(textBox5);
             panel6.Controls.Add(label19);
             panel6.Controls.Add(label18);
-            panel6.Location = new Point(679, 3);
+            panel6.Location = new Point(689, 9);
             panel6.Name = "panel6";
             panel6.Size = new Size(370, 157);
             panel6.TabIndex = 1;
             // 
             // button12
             // 
+            button12.BackColor = SystemColors.ControlLightLight;
             button12.Location = new Point(278, 127);
             button12.Name = "button12";
             button12.Size = new Size(75, 23);
             button12.TabIndex = 9;
             button12.Text = "Сохранить";
-            button12.UseVisualStyleBackColor = true;
+            button12.UseVisualStyleBackColor = false;
             button12.Click += button12_Click;
             // 
             // button10
             // 
+            button10.BackColor = SystemColors.ControlLightLight;
             button10.Location = new Point(149, 127);
             button10.Name = "button10";
             button10.Size = new Size(75, 23);
             button10.TabIndex = 8;
             button10.Text = "Добавить";
-            button10.UseVisualStyleBackColor = true;
+            button10.UseVisualStyleBackColor = false;
             button10.Click += button10_Click;
             // 
             // button9
             // 
+            button9.BackColor = SystemColors.ControlLightLight;
             button9.Location = new Point(20, 127);
             button9.Name = "button9";
             button9.Size = new Size(75, 23);
             button9.TabIndex = 7;
             button9.Text = "Удалить";
-            button9.UseVisualStyleBackColor = true;
+            button9.UseVisualStyleBackColor = false;
             button9.Click += button9_Click;
             // 
             // textBox6
             // 
-            textBox6.Location = new Point(112, 67);
+            textBox6.Location = new Point(115, 67);
             textBox6.Name = "textBox6";
             textBox6.Size = new Size(241, 23);
             textBox6.TabIndex = 6;
@@ -638,9 +664,10 @@
             // 
             dataGridView3.AllowUserToAddRows = false;
             dataGridView3.AllowUserToDeleteRows = false;
+            dataGridView3.BackgroundColor = SystemColors.ControlLightLight;
             dataGridView3.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView3.Columns.AddRange(new DataGridViewColumn[] { Column16, Column17, Column18, Column19, Column20 });
-            dataGridView3.Location = new Point(0, 0);
+            dataGridView3.Location = new Point(3, 7);
             dataGridView3.Name = "dataGridView3";
             dataGridView3.ReadOnly = true;
             dataGridView3.Size = new Size(673, 166);
@@ -684,37 +711,42 @@
             // label12
             // 
             label12.AutoSize = true;
-            label12.Location = new Point(296, 517);
+            label12.Font = new Font("Segoe UI", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label12.Location = new Point(17, 718);
             label12.Name = "label12";
-            label12.Size = new Size(54, 15);
+            label12.Size = new Size(123, 37);
             label12.TabIndex = 3;
             label12.Text = "Таймер: ";
             // 
             // button7
             // 
+            button7.BackColor = SystemColors.ControlLightLight;
             button7.Enabled = false;
-            button7.Location = new Point(12, 545);
+            button7.ForeColor = Color.ForestGreen;
+            button7.Location = new Point(13, 757);
             button7.Name = "button7";
-            button7.Size = new Size(310, 47);
+            button7.Size = new Size(153, 33);
             button7.TabIndex = 4;
             button7.Text = "Включить генерацию";
-            button7.UseVisualStyleBackColor = true;
+            button7.UseVisualStyleBackColor = false;
             button7.Click += button7_Click;
             // 
             // button8
             // 
+            button8.BackColor = SystemColors.ControlLightLight;
             button8.Enabled = false;
-            button8.Location = new Point(328, 545);
+            button8.ForeColor = Color.DarkRed;
+            button8.Location = new Point(172, 757);
             button8.Name = "button8";
-            button8.Size = new Size(347, 47);
+            button8.Size = new Size(159, 33);
             button8.TabIndex = 5;
             button8.Text = "Выключить генерацию";
-            button8.UseVisualStyleBackColor = true;
+            button8.UseVisualStyleBackColor = false;
             button8.Click += button8_Click;
             // 
             // richTextBox1
             // 
-            richTextBox1.Location = new Point(1059, 306);
+            richTextBox1.Location = new Point(1186, 510);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.Size = new Size(377, 216);
             richTextBox1.TabIndex = 6;
@@ -722,7 +754,7 @@
             // 
             // button11
             // 
-            button11.Location = new Point(1302, 543);
+            button11.Location = new Point(1429, 747);
             button11.Name = "button11";
             button11.Size = new Size(124, 50);
             button11.TabIndex = 9;
@@ -733,7 +765,7 @@
             // label13
             // 
             label13.AutoSize = true;
-            label13.Location = new Point(1074, 288);
+            label13.Location = new Point(1201, 492);
             label13.Name = "label13";
             label13.Size = new Size(109, 15);
             label13.TabIndex = 10;
@@ -741,7 +773,7 @@
             // 
             // dateTimePicker1
             // 
-            dateTimePicker1.Location = new Point(1087, 572);
+            dateTimePicker1.Location = new Point(1214, 776);
             dateTimePicker1.MaxDate = new DateTime(2040, 12, 31, 0, 0, 0, 0);
             dateTimePicker1.MinDate = new DateTime(2010, 1, 1, 0, 0, 0, 0);
             dateTimePicker1.Name = "dateTimePicker1";
@@ -750,7 +782,7 @@
             // 
             // dateTimePicker2
             // 
-            dateTimePicker2.Location = new Point(1087, 543);
+            dateTimePicker2.Location = new Point(1214, 747);
             dateTimePicker2.MaxDate = new DateTime(2040, 12, 31, 0, 0, 0, 0);
             dateTimePicker2.MinDate = new DateTime(2010, 1, 1, 0, 0, 0, 0);
             dateTimePicker2.Name = "dateTimePicker2";
@@ -760,7 +792,7 @@
             // label14
             // 
             label14.AutoSize = true;
-            label14.Location = new Point(1060, 549);
+            label14.Location = new Point(1187, 753);
             label14.Name = "label14";
             label14.Size = new Size(21, 15);
             label14.TabIndex = 13;
@@ -769,7 +801,7 @@
             // label15
             // 
             label15.AutoSize = true;
-            label15.Location = new Point(1060, 578);
+            label15.Location = new Point(1187, 782);
             label15.Name = "label15";
             label15.Size = new Size(22, 15);
             label15.TabIndex = 14;
@@ -778,7 +810,7 @@
             // label16
             // 
             label16.AutoSize = true;
-            label16.Location = new Point(1260, 288);
+            label16.Location = new Point(1387, 492);
             label16.Name = "label16";
             label16.Size = new Size(128, 15);
             label16.TabIndex = 15;
@@ -796,17 +828,66 @@
             // 
             // panel7
             // 
-            panel7.Location = new Point(1060, 5);
+            panel7.BackColor = SystemColors.ControlLightLight;
+            panel7.BorderStyle = BorderStyle.FixedSingle;
+            panel7.ForeColor = SystemColors.HotTrack;
+            panel7.Location = new Point(1187, 70);
             panel7.Name = "panel7";
-            panel7.Size = new Size(376, 268);
+            panel7.Size = new Size(376, 407);
             panel7.TabIndex = 16;
             panel7.Paint += panel7_Paint;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label3.Location = new Point(498, 9);
+            label3.Name = "label3";
+            label3.Size = new Size(122, 25);
+            label3.TabIndex = 17;
+            label3.Text = "Интерфейсы";
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label17.Location = new Point(515, 246);
+            label17.Name = "label17";
+            label17.Size = new Size(88, 25);
+            label17.TabIndex = 18;
+            label17.Text = "Девайсы";
+            // 
+            // label20
+            // 
+            label20.AutoSize = true;
+            label20.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label20.Location = new Point(512, 491);
+            label20.Name = "label20";
+            label20.Size = new Size(92, 25);
+            label20.TabIndex = 19;
+            label20.Text = "Регистры";
+            // 
+            // button13
+            // 
+            button13.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            button13.Location = new Point(1186, 31);
+            button13.Name = "button13";
+            button13.Size = new Size(377, 33);
+            button13.TabIndex = 20;
+            button13.Text = "Получить логи";
+            button13.UseVisualStyleBackColor = true;
+            button13.Click += button13_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1438, 604);
+            BackColor = Color.Silver;
+            ClientSize = new Size(1571, 811);
+            Controls.Add(button13);
+            Controls.Add(label20);
+            Controls.Add(label17);
+            Controls.Add(label3);
             Controls.Add(panel7);
             Controls.Add(label16);
             Controls.Add(label15);
@@ -903,6 +984,14 @@
         private TextBox textBox5;
         private Label label19;
         private Label label18;
+        private DataGridViewTextBoxColumn Column16;
+        private DataGridViewTextBoxColumn Column17;
+        private DataGridViewTextBoxColumn Column18;
+        private DataGridViewTextBoxColumn Column19;
+        private DataGridViewTextBoxColumn Column20;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Timer timer2;
+        private Panel panel7;
         private DataGridViewTextBoxColumn Column5;
         private DataGridViewTextBoxColumn Column6;
         private DataGridViewTextBoxColumn Column7;
@@ -914,13 +1003,9 @@
         private DataGridViewTextBoxColumn Column13;
         private DataGridViewTextBoxColumn Column14;
         private DataGridViewTextBoxColumn Column15;
-        private DataGridViewTextBoxColumn Column16;
-        private DataGridViewTextBoxColumn Column17;
-        private DataGridViewTextBoxColumn Column18;
-        private DataGridViewTextBoxColumn Column19;
-        private DataGridViewTextBoxColumn Column20;
-        private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Timer timer2;
-        private Panel panel7;
+        private Label label3;
+        private Label label17;
+        private Label label20;
+        private Button button13;
     }
 }

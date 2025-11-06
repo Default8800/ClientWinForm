@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic.Logging;
+using Microsoft.Win32;
 
 namespace ClientWinForm.DataClasses
 {
@@ -280,67 +282,31 @@ namespace ClientWinForm.DataClasses
 
     class ResponseGetAllData
     {
-        private List<Interfaces> _objectListInterfaces = new List<Interfaces>();
-        private List<Devices> _objectListDevices = new List<Devices>();
-        private List<Registers> _objectListRegisters = new List<Registers>();
-        private List<RegisterValues> _objectListRegisterValues = new List<RegisterValues>();
-        private List<Logs> _objectListLogs = new List<Logs>();
-
-        public List<Interfaces> ObjectsListInterfaces
-        {
-            get { return _objectListInterfaces; }
-            set { _objectListInterfaces = value; }
-        }
-
-        public List<Devices> ObjectsListDevices
-        {
-            get { return _objectListDevices; }
-            set { _objectListDevices = value; }
-        }
-
-        public List<Registers> ObjectsListRegisters
-        {
-            get { return _objectListRegisters; }
-            set { _objectListRegisters = value; }
-        }
-
-        public List<RegisterValues> ObjectsListRegisterValues
-        {
-            get { return _objectListRegisterValues; }
-            set { _objectListRegisterValues = value; }
-        }
-
-        public List<Logs> ObjectsListLogs
-        {
-            get { return _objectListLogs; }
-            set { _objectListLogs = value; }
-        }
+        // Эти свойства должны совпадать с именами в JSON!
+        public List<Interfaces> Interfaces { get; set; } = new List<Interfaces>();
+        public List<Devices> Devices { get; set; } = new List<Devices>();
+        public List<Registers> Registers { get; set; } = new List<Registers>();
+        public List<RegisterValues> RegisterValues { get; set; } = new List<RegisterValues>();
+        public List<Logs> Logs { get; set; } = new List<Logs>();
 
         // Конструктор по умолчанию
         public ResponseGetAllData()
         {
         }
 
-        // Существующий конструктор с параметрами
-        public ResponseGetAllData(List<Interfaces> objectsListInterfaces, List<Devices> objectListDevices)
-        {
-            this.ObjectsListInterfaces = objectsListInterfaces;
-            this.ObjectsListDevices = objectListDevices;
-        }
-
-        // Новый конструктор для всех типов
+        // Конструктор для всех типов
         public ResponseGetAllData(
-            List<Interfaces> objectsListInterfaces,
-            List<Devices> objectListDevices,
-            List<Registers> objectListRegisters,
-            List<RegisterValues> objectListRegisterValues,
-            List<Logs> objectListLogs)
+            List<Interfaces> interfaces,
+            List<Devices> devices,
+            List<Registers> registers,
+            List<RegisterValues> registerValues,
+            List<Logs> logs)
         {
-            this.ObjectsListInterfaces = objectsListInterfaces;
-            this.ObjectsListDevices = objectListDevices;
-            this.ObjectsListRegisters = objectListRegisters;
-            this.ObjectsListRegisterValues = objectListRegisterValues;
-            this.ObjectsListLogs = objectListLogs;
+            this.Interfaces = interfaces;
+            this.Devices = devices;
+            this.Registers = registers;
+            this.RegisterValues = registerValues;
+            this.Logs = logs;
         }
     }
     class ResponseGetOneItem
