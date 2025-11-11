@@ -20,6 +20,7 @@ namespace ClientWinForm
         private List<Devices> _devicesList = new List<Devices>();
         public Form1()
         {
+            
             InitializeComponent();
             panel7.Paint += panel7_Paint;
         }
@@ -71,6 +72,24 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, typeObject);
+
+                if (dataGridView1.Rows.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    button7.Enabled = false;
+                    button8.Enabled = false;
+                    label12.Text = "Таймер:";
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -157,9 +176,14 @@ namespace ClientWinForm
         }
         private void DrawDevice(Graphics g, Devices device)
         {
-            if (!device.IsEnabled) return; // Не рисуем отключенные устройства
+            if (!device.IsEnabled) return;
 
-            // Преобразуем цвет из HEX в Color
+            // Получаем высоту панели
+            int panelHeight = panel1.Height;
+
+            // Преобразуем координату Y: 0 становится посередине, положительные вверх, отрицательные вниз
+            int drawY = panelHeight / 2 - device.PosY;
+
             Color deviceColor = ColorTranslator.FromHtml(device.Color);
 
             using (SolidBrush brush = new SolidBrush(deviceColor))
@@ -168,25 +192,21 @@ namespace ClientWinForm
                 switch (device.FigureType)
                 {
                     case "Круг ●":
-                        // Рисуем круг
-                        g.FillEllipse(brush, device.PosX, device.PosY, device.Size, device.Size);
-                        g.DrawEllipse(pen, device.PosX, device.PosY, device.Size, device.Size);
+                        g.FillEllipse(brush, device.PosX, drawY, device.Size, device.Size);
+                        g.DrawEllipse(pen, device.PosX, drawY, device.Size, device.Size);
                         break;
 
-
                     case "Квадрат ■":
-                        // Рисуем квадрат
-                        g.FillRectangle(brush, device.PosX, device.PosY, device.Size, device.Size);
-                        g.DrawRectangle(pen, device.PosX, device.PosY, device.Size, device.Size);
+                        g.FillRectangle(brush, device.PosX, drawY, device.Size, device.Size);
+                        g.DrawRectangle(pen, device.PosX, drawY, device.Size, device.Size);
                         break;
 
                     case "Треугольник ▲":
-                        // Рисуем треугольник (равносторонний)
                         Point[] trianglePoints = new Point[]
                         {
-                    new Point(device.PosX + device.Size / 2, device.PosY), // Верхняя точка
-                    new Point(device.PosX, device.PosY + device.Size),     // Левая нижняя точка
-                    new Point(device.PosX + device.Size, device.PosY + device.Size) // Правая нижняя точка
+                    new Point(device.PosX + device.Size / 2, drawY), // Верхняя точка
+                    new Point(device.PosX, drawY + device.Size),     // Левая нижняя точка
+                    new Point(device.PosX + device.Size, drawY + device.Size) // Правая нижняя точка
                         };
                         g.FillPolygon(brush, trianglePoints);
                         g.DrawPolygon(pen, trianglePoints);
@@ -194,11 +214,11 @@ namespace ClientWinForm
                 }
             }
 
-            // Добавляем текст с названием устройства
+            // Текст тоже преобразуем
             using (Font font = new Font("Arial", 8))
             using (SolidBrush textBrush = new SolidBrush(Color.Black))
             {
-                g.DrawString(device.Name, font, textBrush, device.PosX, device.PosY - 15);
+                g.DrawString(device.Name, font, textBrush, device.PosX, drawY - 15);
             }
         }
         private void panel7_Paint(object sender, PaintEventArgs e)
@@ -251,7 +271,7 @@ namespace ClientWinForm
 
 
 
-            timer1.Stop();
+            
             dataGridView2.Rows.Clear();
             dataGridView3.Rows.Clear();
             richTextBox1.Text = String.Empty;
@@ -260,9 +280,9 @@ namespace ClientWinForm
             button11.Enabled = false;
             dateTimePicker1.Enabled = false;
             dateTimePicker2.Enabled = false;
-            button7.Enabled = false;
-            button8.Enabled = false;
-            label12.Text = "Таймер:";
+            
+            
+            
         }
         private void dataGridView2_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -305,6 +325,35 @@ namespace ClientWinForm
                             interfaceObj.EditingDate
                         );
                     }
+                    _backListRegisters.Clear();
+                    foreach (var registersObj in response.Registers)
+                    {
+                        _backListRegisters.Add(registersObj);
+                        
+                        
+                        
+
+
+                    }
+                    if(_backListRegisters.Count>0)
+                    {
+                        if (button8.Enabled == true && timer2.Enabled == true)
+                        {
+                            button7.Enabled = false;
+                            button8.Enabled = true;
+                        }
+                        else
+                        {
+                            button8.Enabled = false;
+                            button7.Enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        button7.Enabled = false;
+                        button8.Enabled = false;
+                    }
+                    
                     break;
                 case "Devices":
 
@@ -334,10 +383,54 @@ namespace ClientWinForm
                             _devicesList.Add(devicesObj);
                         }
                     }
+                    _backListRegisters.Clear();
+                    foreach (var registersObj in response.Registers)
+                    {
+                        _backListRegisters.Add(registersObj);
 
+
+
+
+
+                    }
+                    if (_backListRegisters.Count > 0)
+                    {
+                        if (button8.Enabled == true && timer2.Enabled == true)
+                        {
+                            button7.Enabled = false;
+                            button8.Enabled = true;
+                        }
+                        else
+                        {
+                            button8.Enabled = false;
+                            button7.Enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        button7.Enabled = false;
+                        button8.Enabled = false;
+                    }
                     // Отрисовываем устройства на Panel
                     DrawDevicesOnPanel();
-
+                    if (_backListRegisters.Count > 0)
+                    {
+                        if (button8.Enabled == true && timer2.Enabled == true)
+                        {
+                            button7.Enabled = false;
+                            button8.Enabled = true;
+                        }
+                        else
+                        {
+                            button8.Enabled = false;
+                            button7.Enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        button7.Enabled = false;
+                        button8.Enabled = false;
+                    }
                     break;
                 case "Registers":
 
@@ -363,7 +456,24 @@ namespace ClientWinForm
 
                     }
 
-
+                    if (_backListRegisters.Count > 0)
+                    {
+                        if (button8.Enabled == true && timer2.Enabled == true)
+                        {
+                            button7.Enabled = false;
+                            button8.Enabled = true;
+                        }
+                        else
+                        {
+                            button8.Enabled = false;
+                            button7.Enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        button7.Enabled = false;
+                        button8.Enabled = false;
+                    }
                     break;
                 case "Logs":
                     FormLogs form = new FormLogs();
@@ -670,7 +780,7 @@ namespace ClientWinForm
         }
         private async void button2_Click(object sender, EventArgs e)//копка удалить интерфейс
         {
-
+            
             button3.Enabled = false;
             button2.Enabled = false;
             using var tcpClient = new TcpClient();
@@ -689,6 +799,22 @@ namespace ClientWinForm
                 WriteIndented = false // без форматирования
             };
 
+            if (dataGridView2.Rows.Count > 0)
+            {
+                dataGridView2.Rows.Clear();
+            }
+            if (dataGridView3.Rows.Count > 0)
+            {
+                dataGridView3.Rows.Clear();
+            }
+            
+            using (Graphics g = panel7.CreateGraphics())
+            {
+                g.Clear(panel7.BackColor); // Очищает цветом фона панели
+            }
+            richTextBox1.Clear();
+            label13.Text = "История регистра:";
+            label16.Text = "Актуальное значение:";
             // Сериализуем в JSON
             string json = JsonSerializer.Serialize(request, option);
             Console.WriteLine($" Отправляемый JSON: {json}");
@@ -720,6 +846,25 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Interfaces");
+
+                if (dataGridView1.Rows.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    button7.Enabled = false;
+                    button8.Enabled = false;
+                    label12.Text = "Таймер:";
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
+
             }
             catch (JsonException ex)
             {
@@ -783,6 +928,21 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Interfaces");
+
+                if (dataGridView1.Rows.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -843,6 +1003,21 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Devices");
+
+                if (dataGridView2.Rows.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -941,6 +1116,21 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Devices");
+
+                if (dataGridView2.Rows.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -1037,6 +1227,21 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Devices");
+
+                if (dataGridView2.Rows.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -1080,7 +1285,33 @@ namespace ClientWinForm
             var data = Encoding.UTF8.GetBytes(json);
             await stream.WriteAsync(data, 0, data.Length);
 
+            
+           if(timer1.Enabled == true && timer2.Enabled == true && button7.Enabled ==false && button8.Enabled==true)
+           {
+                timer1.Stop();
+                timer2.Stop();
+                for(int i = 0;i<_backListRegisters.Count;i++)
+                {
+                    if (_backListRegisters[i].Id == _idRegisters)
+                    {
+                        _backListRegisters.RemoveAt(i);
+                    }
 
+                }
+                for(int i = 0; i < _registerValuesList.Count; i++)
+                {
+                    if (_registerValuesList[i].RegisterId == _idRegisters)
+                    {
+                        _registerValuesList.RemoveAt(i);
+                    }
+                }
+                timer1.Start();
+                timer2.Start();
+            }
+            
+            richTextBox1.Clear();
+            label13.Text = "История регистра:";
+            label16.Text = "Актуальное значение:";
 
 
             // Читаем ответ
@@ -1103,6 +1334,20 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Registers");
+                if (_backListRegisters.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -1167,6 +1412,23 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Registers");
+                if (_backListRegisters.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    button7.Enabled = false;
+                    button8.Enabled = false;
+                    label12.Text = "Таймер:";
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -1227,6 +1489,23 @@ namespace ClientWinForm
             try
             {
                 await AddDataToDataGridView(response_string, "Registers");
+                if (_backListRegisters.Count == 0)
+                {
+                    timer1.Stop();
+                    timer2.Stop();
+                    timer1.Enabled = false;
+                    timer2.Enabled = false;
+                    button7.Enabled = false;
+                    button8.Enabled = false;
+                    label12.Text = "Таймер:";
+                    using (Graphics g = panel7.CreateGraphics())
+                    {
+                        g.Clear(panel7.BackColor); // Очищает цветом фона панели
+                    }
+                    richTextBox1.Clear();
+                    label13.Text = "История регистра:";
+                    label16.Text = "Актуальное значение:";
+                }
             }
             catch (JsonException ex)
             {
@@ -1264,7 +1543,7 @@ namespace ClientWinForm
 
                 try
                 {
-                    Console.WriteLine($"📤 Последовательная отправка {_registerValuesList.Count} значений...");
+                    Console.WriteLine($" Последовательная отправка {_registerValuesList.Count} значений...");
 
                     // Разбиваем на пачки
                     var batches = _registerValuesList
@@ -1281,11 +1560,11 @@ namespace ClientWinForm
                     }
 
                     _registerValuesList.Clear();
-                    Console.WriteLine($"✅ Все {batches.Count} пачек отправлены");
+                    Console.WriteLine($" Все {batches.Count} пачек отправлены");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❌ Ошибка отправки: {ex.Message}");
+                    Console.WriteLine($" Ошибка отправки: {ex.Message}");
                 }
                 finally
                 {
@@ -1295,11 +1574,26 @@ namespace ClientWinForm
             }
             else
             {
-                Random rnd = new Random();
-                int i = rnd.Next(0, _backListRegisters.Count);
-                float value = rnd.NextSingle() * 1000;
-                float rounded_value = (float)Math.Round(value, 2);
-                _registerValuesList.Add(new RegisterValues(_backListRegisters[i].Id, rounded_value));
+                // Проверяем, есть ли регистры
+                if (_backListRegisters.Count == 0)
+                {
+                    // Ждем немного и пробуем снова в следующем тике
+                    await Task.Delay(5000);
+                    return;
+                }
+
+                try
+                {
+                    Random rnd = new Random();
+                    int i = rnd.Next(0, _backListRegisters.Count);
+                    float value = rnd.NextSingle() * 1000;
+                    float rounded_value = (float)Math.Round(value, 2);
+                    _registerValuesList.Add(new RegisterValues(_backListRegisters[i].Id, rounded_value));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Ошибка при добавлении значения: {ex.Message}");
+                }
             }
         }
 
@@ -1330,11 +1624,11 @@ namespace ClientWinForm
                 using var reader = new StreamReader(stream1, Encoding.UTF8);
                 var response_string = await reader.ReadToEndAsync();
 
-                Console.WriteLine($"✅ Отправлена пачка из {batch.Count} значений. Ответ: {response_string}");
+                Console.WriteLine($"Отправлена пачка из {batch.Count} значений. Ответ: {response_string}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Ошибка отправки пачки: {ex.Message}");
+                Console.WriteLine($"Ошибка отправки пачки: {ex.Message}");
                 throw; // Пробрасываем исключение наверх
             }
         }
